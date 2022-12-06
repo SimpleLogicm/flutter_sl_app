@@ -3,6 +3,7 @@ import 'package:sl_app/ui/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
+
 }
 final navigatorKey = GlobalKey<NavigatorState>();
 
