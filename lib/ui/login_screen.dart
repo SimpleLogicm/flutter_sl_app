@@ -216,6 +216,8 @@ final AadOAuth oAuth = AadOAuth(config);
     } catch (e) {
       showError(e);
     }
+
+
   }
 
   void forgotPasswordClick() {
