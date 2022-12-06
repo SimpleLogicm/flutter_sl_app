@@ -205,7 +205,7 @@ final AadOAuth oAuth = AadOAuth(config);
 
 
        checkLoginAzure = true;
-       debugPrint(idToken.toString());
+       debugPrint(idToken.toString().trim());
        //debugPrint('Response : '+graphResponse.body);
       //showMessage('Logged in successfully, your access token: '+graphResponse.statusCode.toString());
       // if(graphResponse.statusCode == 200){
@@ -213,7 +213,11 @@ final AadOAuth oAuth = AadOAuth(config);
       //
       // }
 
-    } catch (e) {
+    }
+
+
+
+    catch (e) {
       showError(e);
     }
 
