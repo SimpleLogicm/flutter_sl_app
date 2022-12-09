@@ -1,6 +1,10 @@
 
+import 'dart:developer';
+
 import 'package:aad_oauth/model/config.dart';
+import 'package:sl_app/ui/dashboard_screen.dart';
 import '../network/AzureUserProfile.dart';
+import '../network/api_calls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:aad_oauth/aad_oauth.dart';
@@ -9,6 +13,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../model/azure_profile_model.dart';
+import '../model/user_details_model.dart';
 
 
 class login_screen extends StatefulWidget {
@@ -20,7 +25,8 @@ class login_screen extends StatefulWidget {
 
 class _login_screenState extends State<login_screen> {
   late Future<azure_profile_model> azureProfileObject;
-  var idToken;
+  late Future<List<user_details_model>> userDetailsObject;
+  var accessToken;
   bool checkLoginAzure = false;
   _login_screenState(GlobalKey<NavigatorState> navigatorKey);
 
@@ -126,14 +132,14 @@ final AadOAuth oAuth = AadOAuth(config);
                   child: Text('Forgot Password?',style: TextStyle(
                     color: Colors.black54,)
                     ,),
-                  onTap: forgotPasswordClick,
+                  onTap: () => Login("ForgetPassword"),
                 ),
               ),
             ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 30.0,vertical: 30.0),
               height: MediaQuery.of(context).size.height/17,
-              child: ElevatedButton(onPressed: onLoginBtnClick, child: Text('LOGIN'),style: ElevatedButton.styleFrom(
+              child: ElevatedButton(onPressed:() => Login("LoginWithIdPass"), child: Text('LOGIN'),style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 elevation: 6.0,
                 shape: RoundedRectangleBorder(
@@ -159,7 +165,7 @@ final AadOAuth oAuth = AadOAuth(config);
             // ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 30.0,vertical: 5.0),
-              child: ElevatedButton.icon(onPressed: azurLoginClick,
+              child: ElevatedButton.icon(onPressed: () => Login("AzureLogin"),
                 style: ElevatedButton.styleFrom(
                   primary: Colors.amberAccent,
                   onPrimary: Colors.black,
@@ -175,7 +181,7 @@ final AadOAuth oAuth = AadOAuth(config);
 
             Container(
               margin: EdgeInsets.symmetric(horizontal: 30.0,vertical: 5.0),
-              child: ElevatedButton.icon(onPressed: loginWithGoogle,
+              child: ElevatedButton.icon(onPressed:() =>  Login("GoogleLogin"),
                   style: ElevatedButton.styleFrom(
                     primary: Colors.amberAccent,
                     onPrimary: Colors.black,
@@ -195,47 +201,52 @@ final AadOAuth oAuth = AadOAuth(config);
     );
   }
 
-  void azurLoginClick() async
-  {
-   // debugPrint("Azure Click");
-    try{
-     await oAuth.login();
-       idToken  = await oAuth.getAccessToken();
-    // azureProfileObject = Network().getAzureProfileInfo(idToken);
+  // void azurLoginClick() async
+  // {
+  //  // debugPrint("Azure Click");
+  //   try{
+  //    await oAuth.login();
+  //    accessToken  = await oAuth.getAccessToken();
+  //    azureProfileObject = Network().getAzureProfileInfo(accessToken);
+  //
+  //
+  //
+  //     // debugPrint(idToken);
+  //        log(accessToken.toString());
+  //        azureProfileObject.then((value) {
+  //          userDetailsObject = api_call().getUserDetails(value.userPrincipalName.toString());
+  //          userDetailsObject.then((value) {
+  //            var isActive = value[0].isActive;
+  //            log("$isActive");
+  //            checkLoginAzure = true;
+  //            nevigate_to_dashboard(isActive);
+  //          });
+  //        log(value.jobTitle.toString());
+  //        });
+  //
+  //
+  //    // showMessage('Logged in successfully');
+  //   }
+  //   catch (e) {
+  //     showError(e);
+  //   }
+  //
+  //
+  // }
 
+  /////hhhh//////
+  // void forgotPasswordClick() {
+  //   debugPrint("Forgot password Click");
+  // }
 
-       checkLoginAzure = true;
-       debugPrint(idToken.toString().trim());
-       //debugPrint('Response : '+graphResponse.body);
-      //showMessage('Logged in successfully, your access token: '+graphResponse.statusCode.toString());
-      // if(graphResponse.statusCode == 200){
-      //   showMessage("Login Successful "+graphResponse.body);
-      //
-      // }
-
-    }
-
-
-
-    catch (e) {
-      showError(e);
-    }
-
-
-  }
-
-  void forgotPasswordClick() {
-    debugPrint("Forgot password Click");
-  }
-
-  void onLoginBtnClick()
-  {
-    var email = email_TEF_controller.text;
-    var pass = password_TEF_controller.text;
-    debugPrint(email+" "+pass);
-    email_TEF_controller.clear();
-    password_TEF_controller.clear();
-  }
+  // void onLoginBtnClick()
+  // {
+  //   var email = email_TEF_controller.text;
+  //   var pass = password_TEF_controller.text;
+  //   debugPrint(email+" "+pass);
+  //   email_TEF_controller.clear();
+  //   password_TEF_controller.clear();
+  // }
 
   void azureLogoutClick() async {
     // await oAuth.logout();
@@ -244,11 +255,11 @@ final AadOAuth oAuth = AadOAuth(config);
     if(checkLoginAzure == false )
       {
         await GoogleSignInApi.logout();
-        showMessage('Logged out');
+        showMessage('google account logged out');
       }
     else{
       await oAuth.logout();
-      showMessage('Logged out');
+      showMessage('Azure account logged out');
       checkLoginAzure = false;
     }
 
@@ -256,33 +267,174 @@ final AadOAuth oAuth = AadOAuth(config);
   }
 
   void showError(dynamic ex) {
-    showMessage(ex.toString());
+    //showMessage(ex.toString());
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ex.toString())));
     debugPrint(ex.toString());
   }
 
   void showMessage(String text) {
-    var alert = AlertDialog(content: Text(text), actions: <Widget>[
-      TextButton(
-          child: const Text('Ok'),
-          onPressed: () {
-            Navigator.pop(context);
-          })
-    ]);
-    showDialog(context: context, builder: (BuildContext context) => alert);
+    // var alert = AlertDialog(content: Text(text), actions: <Widget>[
+    //   TextButton(
+    //       child: const Text('Ok'),
+    //       onPressed: () {
+    //         Navigator.pop(context);
+    //       })
+    // ]);
+    // showDialog(context: context, builder: (BuildContext context) => alert);
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+
   }
 
+  // Future loginWithGoogle() async {
+  // final user =  await GoogleSignInApi.login();
+  // if(user == null)
+  //   {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Signing with google is failed")));
+  //   }
+  // else{
+  //  // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(user.displayName.toString())));
+  //   log(user.email);
+  //   userDetailsObject = api_call().getUserDetails(user.email);
+  //   userDetailsObject.then((value){
+  //     if(value.length == 0)
+  //       {
+  //         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is not register")));
+  //       }
+  //     else{
+  //       var isActive = value[0].isActive;
+  //       log("$isActive");
+  //       nevigate_to_dashboard(isActive);
+  //     }
+  //
+  //   });
+  // }
+  // }
 
 
-  Future loginWithGoogle() async {
-  final user =  await GoogleSignInApi.login();
-  if(user == null)
+  void nevigate_to_dashboard(var isActive)
+  {
+    if(isActive == 1)
     {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Signing with google is failed")));
+     // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is active")));
+
+
+
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => dashboard_screen()));
+
+
     }
-  else{
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(user.displayName.toString())));
+    else{
+      //ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is not active")));
+      showMessage("User is not active");
+    }
   }
+
+
+  void Login(String LoginMedium)
+  async
+  {
+    switch(LoginMedium) {
+      case "AzureLogin":
+        {
+
+
+          try{
+            await oAuth.login();
+            accessToken  = await oAuth.getAccessToken();
+            azureProfileObject = Network().getAzureProfileInfo(accessToken);
+
+
+
+            // debugPrint(idToken);
+            log(accessToken.toString());
+            azureProfileObject.then((value) {
+              userDetailsObject = api_call().getUserDetails(value.userPrincipalName.toString());
+              userDetailsObject.then((value) {
+                var isActive = value[0].isActive;
+                log("$isActive");
+                checkLoginAzure = true;
+                nevigate_to_dashboard(isActive);
+              });
+              log(value.jobTitle.toString());
+            });
+
+
+            // showMessage('Logged in successfully');
+          }
+          catch (e) {
+            showError(e);
+          }
+
+
+
+
+        }
+        break;
+
+      case "GoogleLogin":
+        {
+
+
+          try{
+            final user =  await GoogleSignInApi.login();
+            if(user == null)
+            {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Signing with google is failed")));
+            }
+            else{
+              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(user.displayName.toString())));
+              log(user.email);
+              userDetailsObject = api_call().getUserDetails(user.email);
+              userDetailsObject.then((value){
+                if(value.length == 0)
+                {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is not register")));
+                }
+                else{
+                  var isActive = value[0].isActive;
+                  log("$isActive");
+                  nevigate_to_dashboard(isActive);
+                }
+
+              });
+            }
+          }
+          catch(e)
+    {
+      showError(e);
+    }
+
+
+
+        }
+        break;
+
+      case "ForgetPassword":
+        {
+
+          debugPrint("Forgot password Click");
+
+        }
+        break;
+
+      case "LoginWithIdPass":{
+
+        var email = email_TEF_controller.text;
+        var pass = password_TEF_controller.text;
+        debugPrint(email+" "+pass);
+        email_TEF_controller.clear();
+        password_TEF_controller.clear();
+
+      }
+      break;
+      default:{
+        
+      }
+      break;
+    }
   }
+
 }
 
 class GoogleSignInApi {
