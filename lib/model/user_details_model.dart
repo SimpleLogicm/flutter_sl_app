@@ -110,6 +110,9 @@
 
 import 'dart:convert';
 
+
+
+
 List<user_details_model> user_details_modelFromJson(String str) => List<user_details_model>.from(json.decode(str).map((x) => user_details_model.fromJson(x)));
 
 String user_details_modelToJson(List<user_details_model> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));

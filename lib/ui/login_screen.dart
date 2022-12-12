@@ -14,6 +14,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../model/azure_profile_model.dart';
 import '../model/user_details_model.dart';
+import '../model/process_details_model.dart';
+import '../Utils/utils.dart';
 
 
 class login_screen extends StatefulWidget {
@@ -26,8 +28,10 @@ class login_screen extends StatefulWidget {
 class _login_screenState extends State<login_screen> {
   late Future<azure_profile_model> azureProfileObject;
   late Future<List<user_details_model>> userDetailsObject;
+  late Future<List<process_details_model>> processDetailObject;
   var accessToken;
   bool checkLoginAzure = false;
+  bool checkLoginGoogle = false;
   _login_screenState(GlobalKey<NavigatorState> navigatorKey);
 
   TextEditingController email_TEF_controller = TextEditingController();
@@ -254,37 +258,44 @@ final AadOAuth oAuth = AadOAuth(config);
 
     if(checkLoginAzure == false )
       {
+
         await GoogleSignInApi.logout();
-        showMessage('google account logged out');
+        //showMessage('google account logged out');
+        utils().showMessage("google account logged out", context);
+        checkLoginGoogle = false;
       }
     else{
       await oAuth.logout();
-      showMessage('Azure account logged out');
+      // showMessage('Azure account logged out');
+      utils().showMessage("Azure account logged out", context);
       checkLoginAzure = false;
     }
 
 
-  }
 
-  void showError(dynamic ex) {
-    //showMessage(ex.toString());
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ex.toString())));
-    debugPrint(ex.toString());
-  }
 
-  void showMessage(String text) {
-    // var alert = AlertDialog(content: Text(text), actions: <Widget>[
-    //   TextButton(
-    //       child: const Text('Ok'),
-    //       onPressed: () {
-    //         Navigator.pop(context);
-    //       })
-    // ]);
-    // showDialog(context: context, builder: (BuildContext context) => alert);
-
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 
   }
+
+  // void showError(dynamic ex) {
+  //   //showMessage(ex.toString());
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ex.toString())));
+  //   debugPrint(ex.toString());
+  // }
+  //
+  // void showMessage(String text) {
+  //   // var alert = AlertDialog(content: Text(text), actions: <Widget>[
+  //   //   TextButton(
+  //   //       child: const Text('Ok'),
+  //   //       onPressed: () {
+  //   //         Navigator.pop(context);
+  //   //       })
+  //   // ]);
+  //   // showDialog(context: context, builder: (BuildContext context) => alert);
+  //
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  //
+  // }
 
   // Future loginWithGoogle() async {
   // final user =  await GoogleSignInApi.login();
@@ -312,21 +323,21 @@ final AadOAuth oAuth = AadOAuth(config);
   // }
 
 
-  void nevigate_to_dashboard(var isActive)
+  void nevigate_to_dashboard(var isActive, String email)
   {
     if(isActive == 1)
     {
      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is active")));
 
-
-
+      processDetailObject = api_call().getProccessDetails(email);
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => dashboard_screen()));
 
 
     }
     else{
       //ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is not active")));
-      showMessage("User is not active");
+      //showMessage("User is not active");
+      utils().showMessage("User is not active", context);
     }
   }
 
@@ -342,19 +353,17 @@ final AadOAuth oAuth = AadOAuth(config);
           try{
             await oAuth.login();
             accessToken  = await oAuth.getAccessToken();
-            azureProfileObject = Network().getAzureProfileInfo(accessToken);
-
-
-
+           azureProfileObject = Network().getAzureProfileInfo(accessToken);
             // debugPrint(idToken);
             log(accessToken.toString());
             azureProfileObject.then((value) {
               userDetailsObject = api_call().getUserDetails(value.userPrincipalName.toString());
-              userDetailsObject.then((value) {
-                var isActive = value[0].isActive;
+              checkLoginAzure = true;
+              userDetailsObject.then((value2) {
+                var isActive = value2[0].isActive;
                 log("$isActive");
-                checkLoginAzure = true;
-                nevigate_to_dashboard(isActive);
+
+              //  nevigate_to_dashboard(isActive,value.userPrincipalName.toString());
               });
               log(value.jobTitle.toString());
             });
@@ -363,7 +372,8 @@ final AadOAuth oAuth = AadOAuth(config);
             // showMessage('Logged in successfully');
           }
           catch (e) {
-            showError(e);
+            //showError(e);
+            utils().showError(e, context);
           }
 
 
@@ -394,6 +404,7 @@ final AadOAuth oAuth = AadOAuth(config);
                 else{
                   var isActive = value[0].isActive;
                   log("$isActive");
+
                   nevigate_to_dashboard(isActive);
                 }
 
@@ -402,7 +413,9 @@ final AadOAuth oAuth = AadOAuth(config);
           }
           catch(e)
     {
-      showError(e);
+     // showError(e);
+      utils().showError(e, context);
+
     }
 
 
