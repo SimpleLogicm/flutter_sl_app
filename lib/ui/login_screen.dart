@@ -65,24 +65,24 @@ final AadOAuth oAuth = AadOAuth(config);
           children: [
             Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height/2.7,
+              height: 250,
               decoration: BoxDecoration(
                   color: Colors.amber,
                   borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100.0))
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 80.0),
-                      child: Icon(Icons.blur_circular_outlined,color: Colors.white,size: 80.0,),
-                    ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 80.0),
+                    child: Icon(Icons.blur_circular_outlined,color: Colors.white,size: 80.0,),
+                  ),
                   Align(
                     child: Padding(
                       padding: const EdgeInsets.only(right: 30.0,bottom: 20.0),
                       child: Text("Login",style: TextStyle(color: Colors.white,fontWeight: FontWeight.w100,fontSize: 28.0,fontFamily: 'NotoSerif'),),
                     ),
-                 alignment: Alignment.bottomRight, )
+                    alignment: Alignment.bottomRight, )
                 ],
               ),
             ),
@@ -94,10 +94,10 @@ final AadOAuth oAuth = AadOAuth(config);
                     padding: const EdgeInsets.only(top: 8.0),
                     child: SizedBox(
 
-                      width: MediaQuery.of(context).size.width/1.15,
-                      height: MediaQuery.of(context).size.height/15,
+                      width: MediaQuery.of(context).size.width,
+                      height: 40,
                       child: TextField(
-                        controller: email_TEF_controller,
+                          controller: email_TEF_controller,
                           decoration: InputDecoration(
                             focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.amber),borderRadius: BorderRadius.all(Radius.circular(20.0))),
                             labelText: 'User name',
@@ -111,10 +111,10 @@ final AadOAuth oAuth = AadOAuth(config);
                   Padding(
                     padding: const EdgeInsets.only(top: 25.0),
                     child: SizedBox(
-                      width: MediaQuery.of(context).size.width/1.15,
-                      height: MediaQuery.of(context).size.height/15,
+                      width: MediaQuery.of(context).size.width,
+                      height: 40,
                       child: TextField(
-                        controller: password_TEF_controller,
+                          controller: password_TEF_controller,
                           decoration: InputDecoration(
                             focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.amber),borderRadius: BorderRadius.all(Radius.circular(20.0))),
                             labelText: 'Password',
@@ -142,7 +142,7 @@ final AadOAuth oAuth = AadOAuth(config);
             ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 30.0,vertical: 30.0),
-              height: MediaQuery.of(context).size.height/17,
+              height: 40,
               child: ElevatedButton(onPressed:() => Login("LoginWithIdPass"), child: Text('LOGIN'),style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 elevation: 6.0,
@@ -186,23 +186,28 @@ final AadOAuth oAuth = AadOAuth(config);
             Container(
               margin: EdgeInsets.symmetric(horizontal: 30.0,vertical: 5.0),
               child: ElevatedButton.icon(onPressed:() =>  Login("GoogleLogin"),
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.amberAccent,
-                    onPrimary: Colors.black,
-                    minimumSize: Size(double.infinity,50),
-                  ),
-                  icon:FaIcon(
-                    FontAwesomeIcons.google,
-                    color: Colors.purpleAccent,
-                  ) ,
-                  label: Text('Sign in with google'),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.amberAccent,
+                  onPrimary: Colors.black,
+                  minimumSize: Size(double.infinity,50),
+                ),
+                icon:FaIcon(
+                  FontAwesomeIcons.google,
+                  color: Colors.purpleAccent,
+                ) ,
+                label: Text('Sign in with google'),
               ),
             )
 
           ],
         ),
       ),
+
+
+
+
     );
+
   }
 
   // void azurLoginClick() async
@@ -405,7 +410,7 @@ final AadOAuth oAuth = AadOAuth(config);
                   var isActive = value[0].isActive;
                   log("$isActive");
 
-                  nevigate_to_dashboard(isActive);
+                  nevigate_to_dashboard(isActive,user.email);
                 }
 
               });
