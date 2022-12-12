@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sl_app/ui/login_screen.dart';
 
+import 'ui/login_identityserever.dart';
+
 void main() {
   runApp(const MyApp());
 
@@ -14,8 +16,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-    home: login_screen(navigatorKey),
-      navigatorKey: navigatorKey,
+
+    // home: login_screen(navigatorKey),
+    //   navigatorKey: navigatorKey,
+      home: login_identityserever(),
     );
   }
 }

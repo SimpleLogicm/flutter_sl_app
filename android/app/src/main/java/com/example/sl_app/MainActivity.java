@@ -1,4 +1,4 @@
-package com.example.sl_app;
+package com.simplelogic.sl_app;
 
 import io.flutter.embedding.android.FlutterActivity;
 
