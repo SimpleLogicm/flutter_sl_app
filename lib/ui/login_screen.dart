@@ -335,7 +335,17 @@ final AadOAuth oAuth = AadOAuth(config);
      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User is active")));
 
       processDetailObject = api_call().getProccessDetails(email);
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => dashboard_screen()));
+      processDetailObject.then((value) {
+        if(value.isNotEmpty)
+          {
+            log("Individual process details : ");
+            for(int i = 0 ; i < value.length ; i++)
+              {
+                log(value[i].toJson().toString());
+              }
+          }
+      });
+     // Navigator.of(context).push(MaterialPageRoute(builder: (context) => dashboard_screen()));
 
 
     }
@@ -368,7 +378,7 @@ final AadOAuth oAuth = AadOAuth(config);
                 var isActive = value2[0].isActive;
                 log("$isActive");
 
-              //  nevigate_to_dashboard(isActive,value.userPrincipalName.toString());
+                nevigate_to_dashboard(isActive,value.userPrincipalName.toString());
               });
               log(value.jobTitle.toString());
             });
@@ -409,6 +419,7 @@ final AadOAuth oAuth = AadOAuth(config);
                 else{
                   var isActive = value[0].isActive;
                   log("$isActive");
+
 
                   nevigate_to_dashboard(isActive,user.email);
                 }

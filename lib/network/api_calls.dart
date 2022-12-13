@@ -20,6 +20,7 @@ class api_call {
 
     if(userDetailsResponse.statusCode == 200 && userDetailsResponse.body.isNotEmpty)
       {
+        log(utils().base_url+"GetUserDetails?EmailId=$email");
         log(userDetailsResponse.body);
           for(Map<String, dynamic> index in data)
           {
@@ -48,6 +49,7 @@ class api_call {
 
     if(processResponse.statusCode == 200)
       {
+        log(utils().base_url+"GetUserWiseProcess?Username=$email");
         log(processResponse.body.toString());
         for(Map<String, dynamic> index in Processdata)
         {
@@ -64,5 +66,34 @@ class api_call {
     }
   }
 
+ Future<List<user_details_model>> getUserDetailsByOpenId(String email,String accessToken) async
+ {
+   final userDetailsResponse = await http.get(Uri.parse(utils().base_url+"GetUserDetails?EmailId=$email"),
+   headers: {
+     "Authorization" : "Bearer " + "$accessToken",
+     "Content-Type" : "application/json"
+   });
+
+   var data = jsonDecode(userDetailsResponse.body.toString());
+
+   if(userDetailsResponse.statusCode == 200 && userDetailsResponse.body.isNotEmpty)
+   {
+     log(utils().base_url+"GetUserDetails?EmailId=$email");
+     log(userDetailsResponse.body);
+     for(Map<String, dynamic> index in data)
+     {
+       userData.add(user_details_model.fromJson(index));
+
+     }
+
+     return userData;
+
+   }
+   else{
+     log("error while fetching user details");
+     //throw Exception("error while fetching user details");
+     return userData;
+   }
+ }
   
 }
