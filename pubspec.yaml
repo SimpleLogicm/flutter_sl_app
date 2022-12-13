@@ -43,6 +43,7 @@ dependencies:
   openid_client: ^0.4.1
   url_launcher: ^6.0.4
   change_app_package_name: ^1.0.0
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_test:

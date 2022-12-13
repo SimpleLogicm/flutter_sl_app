@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:aad_oauth/model/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sl_app/Utils/shared_pref.dart';
 import 'package:sl_app/ui/dashboard_screen.dart';
 import '../network/AzureUserProfile.dart';
 import '../network/api_calls.dart';
@@ -30,6 +32,8 @@ class login_identityserever extends StatefulWidget {
 class _login_identitysereverState extends State<login_identityserever> {
 
   var emaiId;
+  String sharedemail = "";
+ var  sharedtoken;
   final String _clientId = 'sl-app-flutter';
   static const String _issuer = 'https://sldev-identityapi.azurewebsites.net';
   //static const String _issuer = 'https://8a92d38ca051.ngrok.io';
@@ -40,61 +44,78 @@ class _login_identitysereverState extends State<login_identityserever> {
   String logoutUrl = "";
 
 
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    shared_pref().getString_SharedprefData("useremail").then((value) {
+      setState(() {
+        sharedemail = value.toString();
+        debugPrint(sharedemail);
+        if(sharedemail == 'null'){
+          getloginopen(Uri.parse(_issuer), _clientId, _scopes);
+        }else{
+          Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail,)));
+        }
+      });
+    });
+
+    // shared_pref().getString_SharedprefData("usertoken").then((value){
+    //
+    //   setState(() {
+    //     sharedtoken= value.toString();
+    //     debugPrint(sharedtoken);
+    //   });
+    // });
+
+
+    super.initState();
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
 
+
+
     return Container(
       color: Colors.white,
-      child: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              child: Text("Login"),
-              onPressed: () async {
-                var tokenInfo = await authenticate(
-                    Uri.parse(_issuer), _clientId, _scopes);
-                print(tokenInfo.accessToken);
-              },
-            ),
-            ElevatedButton(
-              child: Text("Logout"),
-              onPressed: () async {
-                logout();
-              },
-            ),
-          ],
-        ),
-      ),
+      child: Center(child: CircularProgressIndicator()),
     );
 
   }
 
-  Future<TokenResponse> authenticate(
-      Uri uri, String clientId, List<String> scopes) async {
-    // create the client
+
+
+  Future<void> logout() async {
+    if (await canLaunch(logoutUrl)) {
+      await launch(logoutUrl, forceWebView: true);
+    } else {
+      throw 'Could not launch $logoutUrl';
+    }
+    await Future.delayed(Duration(seconds: 2));
+    closeWebView();
+  }
+
+  Future<void> getloginopen(Uri uri, String clientId,List<String> scopes) async {
+
     var issuer = await Issuer.discover(uri);
     var client = new Client(issuer, clientId);
 
+
     // create a function to open a browser with an url
     urlLauncher(String url) async {
-      // if (await canLaunch(url))
-      // {
-      //   await launch(url, forceWebView: true, enableJavaScript: true);
-      // } else {
-      //   throw 'Could not launch $url';
-      // }
 
       if(await canLaunchUrl(Uri.parse(url)))
-        {
-          await launchUrl(Uri.parse(url),mode: LaunchMode.inAppWebView);
-        }
+      {
+        await launchUrl(Uri.parse(url),mode: LaunchMode.inAppWebView);
+      }
       else{
         throw "Could not launch $url";
       }
-
-      //await launchUrl(Uri.parse(url),mode: LaunchMode.inAppWebView);
     }
 
     // create an authenticator
@@ -113,41 +134,39 @@ class _login_identitysereverState extends State<login_identityserever> {
     var res = await c.getTokenResponse();
     var ema = await c.getUserInfo().then((value){
       log(value.email.toString());
-      emaiId = value.email.toString();
-      getUserDetails(emaiId, res.accessToken.toString());
+      var emaiId = value.email.toString();
+
+      shared_pref().putString_Sharedvalue("useremail", emaiId);
+      shared_pref().putString_Sharedvalue("usertoken", res.accessToken.toString());
+
+      getUserdertails2(emaiId,res.accessToken.toString());
     });
-    setState(() {
-      logoutUrl = c.generateLogoutUrl().toString();
-    });
+
     log(res.accessToken.toString());
-   // log()
 
-
-    return res;
   }
 
-  Future<void> logout() async {
-    if (await canLaunch(logoutUrl)) {
-      await launch(logoutUrl, forceWebView: true);
-    } else {
-      throw 'Could not launch $logoutUrl';
-    }
-    await Future.delayed(Duration(seconds: 2));
-    closeWebView();
-  }
-
-
-  void getUserDetails(String Email,String accessToken)
-  {
-
+  void getUserdertails2(String emaiId, String accessToken) {
     late Future<List<user_details_model>> userProfileObject;
     userProfileObject = api_call().getUserDetailsByOpenId(emaiId,accessToken);
     userProfileObject.then((value) {
-    log(value[0].firstName.toString());
+      log(value[0].firstName.toString());
+      if(value.isNotEmpty){
+        Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: value[0].emailId,)));
+      }
+      else{
+        utils().showError("User is not active", context);
+      }
     });
-
   }
 
 
+
 }
+
+
+
+
+
+
 
