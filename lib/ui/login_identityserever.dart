@@ -31,8 +31,10 @@ class login_identityserever extends StatefulWidget {
 
 class _login_identitysereverState extends State<login_identityserever> {
 
-  var emaiId;
+  String? userId;
+  late Future<List<user_details_model>> userDetailsObject;
   String sharedemail = "";
+  String shareduserId = "";
  var  sharedtoken;
   final String _clientId = 'sl-app-flutter';
   static const String _issuer = 'https://sldev-identityapi.azurewebsites.net';
@@ -51,15 +53,21 @@ class _login_identitysereverState extends State<login_identityserever> {
     // TODO: implement initState
 
     shared_pref().getString_SharedprefData("useremail").then((value) {
-      setState(() {
-        sharedemail = value.toString();
-        debugPrint(sharedemail);
-        if(sharedemail == 'null'){
-          getloginopen(Uri.parse(_issuer), _clientId, _scopes);
-        }else{
-          Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail,)));
-        }
+      shared_pref().getString_SharedprefData("userId").then((valueUserId){
+        setState(() {
+          sharedemail = value.toString();
+          shareduserId = valueUserId.toString();
+
+          log("Shared Preference : "+sharedemail+" UserId: "+shareduserId);
+          debugPrint(sharedemail);
+          if(sharedemail == 'null'){
+            getloginopen(Uri.parse(_issuer), _clientId, _scopes);
+          }else{
+            Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail, userId: shareduserId,)));
+          }
+        });
       });
+
     });
 
     // shared_pref().getString_SharedprefData("usertoken").then((value){
@@ -132,14 +140,25 @@ class _login_identitysereverState extends State<login_identityserever> {
     closeWebView();
 
     var res = await c.getTokenResponse();
+
+
+
+
     var ema = await c.getUserInfo().then((value){
       log(value.email.toString());
       var emaiId = value.email.toString();
+      userDetailsObject = api_call().getUserDetails(emaiId);
+      userDetailsObject.then((value){
+        userId = value[0].userId.toString();
+        shared_pref().putString_Sharedvalue("useremail", emaiId);
+        shared_pref().putString_Sharedvalue("usertoken", res.accessToken.toString());
+        shared_pref().putString_Sharedvalue("userId", userId!);
 
-      shared_pref().putString_Sharedvalue("useremail", emaiId);
-      shared_pref().putString_Sharedvalue("usertoken", res.accessToken.toString());
+        getUserdertails2(emaiId,res.accessToken.toString());
+      });
 
-      getUserdertails2(emaiId,res.accessToken.toString());
+
+
     });
 
     log(res.accessToken.toString());
@@ -152,7 +171,7 @@ class _login_identitysereverState extends State<login_identityserever> {
     userProfileObject.then((value) {
       log(value[0].firstName.toString());
       if(value.isNotEmpty){
-        Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: value[0].emailId,)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: value[0].emailId, userId: value[0].userId.toString(),)));
       }
       else{
         utils().showError("User is not active", context);
