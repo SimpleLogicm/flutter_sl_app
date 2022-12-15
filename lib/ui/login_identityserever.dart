@@ -12,7 +12,7 @@ import 'package:aad_oauth/aad_oauth.dart';
 import 'package:sl_app/main.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
+import 'package:webview_flutter/webview_flutter.dart';
 import '../model/azure_profile_model.dart';
 import '../model/user_details_model.dart';
 import '../model/process_details_model.dart';
@@ -31,10 +31,12 @@ class login_identityserever extends StatefulWidget {
 
 class _login_identitysereverState extends State<login_identityserever> {
 
+  WebViewController? controllerGlobal;
   String? userId;
   late Future<List<user_details_model>> userDetailsObject;
   String sharedemail = "";
   String shareduserId = "";
+  String sharedlogoutUrl = "";
  var  sharedtoken;
   final String _clientId = 'sl-app-flutter';
   static const String _issuer = 'https://sldev-identityapi.azurewebsites.net';
@@ -51,25 +53,7 @@ class _login_identitysereverState extends State<login_identityserever> {
   @override
   void initState() {
     // TODO: implement initState
-
-    shared_pref().getString_SharedprefData("useremail").then((value) {
-      shared_pref().getString_SharedprefData("userId").then((valueUserId){
-        setState(() {
-          sharedemail = value.toString();
-          shareduserId = valueUserId.toString();
-
-          log("Shared Preference : "+sharedemail+" UserId: "+shareduserId);
-          debugPrint(sharedemail);
-          if(sharedemail == 'null'){
-            getloginopen(Uri.parse(_issuer), _clientId, _scopes);
-          }else{
-            Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail, userId: shareduserId,)));
-          }
-        });
-      });
-
-    });
-
+    getSharedPreferenceData();
     // shared_pref().getString_SharedprefData("usertoken").then((value){
     //
     //   setState(() {
@@ -77,7 +61,6 @@ class _login_identitysereverState extends State<login_identityserever> {
     //     debugPrint(sharedtoken);
     //   });
     // });
-
 
     super.initState();
   }
@@ -88,11 +71,14 @@ class _login_identitysereverState extends State<login_identityserever> {
   Widget build(BuildContext context) {
 
 
-
-    return Container(
-      color: Colors.white,
-      child: Center(child: CircularProgressIndicator()),
+    return  WillPopScope(
+      onWillPop: _onWillPop,
+      child: Container(
+          color: Colors.white,
+          child: Center(child: CircularProgressIndicator()),
+        ),
     );
+
 
   }
 
@@ -139,6 +125,10 @@ class _login_identitysereverState extends State<login_identityserever> {
     // close the webview when finished
     closeWebView();
 
+    setState(() {
+      logoutUrl = c.generateLogoutUrl().toString();
+      shared_pref().putString_Sharedvalue("logoutUrl", logoutUrl);
+    });
     var res = await c.getTokenResponse();
 
 
@@ -171,7 +161,7 @@ class _login_identitysereverState extends State<login_identityserever> {
     userProfileObject.then((value) {
       log(value[0].firstName.toString());
       if(value.isNotEmpty){
-        Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: value[0].emailId, userId: value[0].userId.toString(),)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: value[0].emailId, userId: value[0].userId.toString(), logoutUrl: logoutUrl,)));
       }
       else{
         utils().showError("User is not active", context);
@@ -179,7 +169,71 @@ class _login_identitysereverState extends State<login_identityserever> {
     });
   }
 
+  void getSharedPreferenceData() async
+  {
 
+    if(utils().isLoggedOut)
+      {
+        SystemNavigator.pop();
+      }
+    else{
+      shared_pref().getString_SharedprefData("useremail").then((value) {
+        shared_pref().getString_SharedprefData("userId").then((valueUserId){
+          shared_pref().getString_SharedprefData("logoutUrl").then((valuelogoutUrl) {
+            setState(() {
+              sharedemail = value.toString();
+              shareduserId = valueUserId.toString();
+              sharedlogoutUrl = valuelogoutUrl.toString();
+
+              log("Shared Preference : "+sharedemail+" UserId: "+shareduserId+" LogoutUrl : "+sharedlogoutUrl);
+              debugPrint(sharedemail);
+              if(sharedemail == 'null'){
+                getloginopen(Uri.parse(_issuer), _clientId, _scopes);
+              }else{
+                Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail, userId: shareduserId, logoutUrl: sharedlogoutUrl,)));
+              }
+            });
+          });
+
+        });
+
+      });
+    }
+
+
+  }
+
+  Future<bool> _onWillPop() async {
+
+    if (await controllerGlobal!.canGoBack()) {
+      print("onwill goback");
+      controllerGlobal!.goBack();
+      SystemNavigator.pop();
+      return Future.value(false);
+    } else {
+    // utils().showError("No back history item", context);
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Do you want to exit'),
+            actions: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('No'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+                child: Text('Yes'),
+              ),
+            ],
+          ));
+      return Future.value(false);
+    }
+  }
 
 }
 

@@ -60,4 +60,15 @@ class shared_pref{
   }
 
 
+ void removeSharedPreference() async
+ {
+   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+   await sharedPreferences.clear();
+   // sharedPreferences.remove(key1);
+   // sharedPreferences.remove(key2);
+   // sharedPreferences.remove(key3);
+
+ }
+
+
 }
