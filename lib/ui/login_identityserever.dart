@@ -53,14 +53,33 @@ class _login_identitysereverState extends State<login_identityserever> {
   @override
   void initState() {
     // TODO: implement initState
-    getSharedPreferenceData();
-    // shared_pref().getString_SharedprefData("usertoken").then((value){
-    //
-    //   setState(() {
-    //     sharedtoken= value.toString();
-    //     debugPrint(sharedtoken);
-    //   });
-    // });
+   // getSharedPreferenceData();
+
+
+
+    shared_pref().getString_SharedprefData("useremail").then((value) {
+      shared_pref().getString_SharedprefData("userId").then((valueUserId){
+        shared_pref().getString_SharedprefData("logoutUrl").then((valuelogoutUrl) {
+          setState(() {
+            sharedemail = value.toString();
+            shareduserId = valueUserId.toString();
+            sharedlogoutUrl = valuelogoutUrl.toString();
+
+            log("Shared Preference : "+sharedemail+" UserId: "+shareduserId+" LogoutUrl : "+sharedlogoutUrl);
+            debugPrint(sharedemail);
+            if(sharedemail != 'null'){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail, userId: shareduserId, logoutUrl: sharedlogoutUrl,)));
+
+            }
+          });
+        });
+
+      });
+
+    });
+
+
+
 
     super.initState();
   }
@@ -73,9 +92,39 @@ class _login_identitysereverState extends State<login_identityserever> {
 
     return  WillPopScope(
       onWillPop: _onWillPop,
-      child: Container(
-          color: Colors.white,
-          child: Center(child: CircularProgressIndicator()),
+      child: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width ,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(
+                    'https://w0.peakpx.com/wallpaper/263/546/HD-wallpaper-simple-abstract-black-designs-half-modern-orange-shadow-white.jpg'),
+                fit: BoxFit.fill,
+              ),
+
+            ),
+          ),
+
+          Container(
+            alignment: Alignment.bottomCenter,
+            margin: EdgeInsets.symmetric(horizontal: 70.0,vertical: 15.0),
+            child: ElevatedButton.icon(onPressed:() => getSharedPreferenceData(),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.amberAccent,
+                onPrimary: Colors.black,
+                minimumSize: Size(double.infinity,50),
+              ),
+              icon:FaIcon(
+                FontAwesomeIcons.server,
+                color: Colors.purpleAccent,
+              ) ,
+              label: Text('Sign in '),
+            ),
+          ),
+
+        ],
         ),
     );
 
@@ -105,7 +154,7 @@ class _login_identitysereverState extends State<login_identityserever> {
 
       if(await canLaunchUrl(Uri.parse(url)))
       {
-        await launchUrl(Uri.parse(url),mode: LaunchMode.inAppWebView);
+        await launchUrl(Uri.parse(url),mode: LaunchMode.inAppWebView,);
       }
       else{
         throw "Could not launch $url";
@@ -171,13 +220,7 @@ class _login_identitysereverState extends State<login_identityserever> {
 
   void getSharedPreferenceData() async
   {
-
-    if(utils().isLoggedOut)
-      {
-        SystemNavigator.pop();
-      }
-    else{
-      shared_pref().getString_SharedprefData("useremail").then((value) {
+    shared_pref().getString_SharedprefData("useremail").then((value) {
         shared_pref().getString_SharedprefData("userId").then((valueUserId){
           shared_pref().getString_SharedprefData("logoutUrl").then((valuelogoutUrl) {
             setState(() {
@@ -198,41 +241,31 @@ class _login_identitysereverState extends State<login_identityserever> {
         });
 
       });
-    }
+
 
 
   }
 
   Future<bool> _onWillPop() async {
 
-    if (await controllerGlobal!.canGoBack()) {
-      print("onwill goback");
-      controllerGlobal!.goBack();
-      SystemNavigator.pop();
-      return Future.value(false);
-    } else {
-    // utils().showError("No back history item", context);
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Do you want to exit'),
-            actions: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('No'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  SystemNavigator.pop();
-                },
-                child: Text('Yes'),
-              ),
-            ],
-          ));
-      return Future.value(false);
-    }
+    return (await showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        title: new Text('Are you sure?'),
+        content: new Text('Do you want to exit an App'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('No'),
+          ),
+          TextButton(
+           // onPressed: () => Navigator.pop(context,true),
+            onPressed: () => SystemNavigator.pop(),
+            child: new Text('Yes'),
+          ),
+        ],
+      ),
+    )) ?? false;
   }
 
 }

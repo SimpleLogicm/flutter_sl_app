@@ -68,8 +68,7 @@ class _dashboard_screenState extends State<dashboard_screen> {
                 Icons.logout,
                 color: Colors.white,
               ),
-              onPressed: () => {
-                LogoutBtn(context,logoutUrl)}
+              onPressed: ()async => LogoutBtn(context,logoutUrl)
           ),
         ],),
         body: Container(
@@ -167,14 +166,15 @@ class _dashboard_screenState extends State<dashboard_screen> {
       context: context,
       builder: (context) => new AlertDialog(
         title: new Text('Are you sure?'),
-        content: new Text('Do you want to exit an App'),
+        content: new Text('Do you want to logout'),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: new Text('No'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context,true),
+           // onPressed: () => Navigator.pop(context,true),
+            onPressed:()async => LogoutBtn(context,logoutUrl),
             child: new Text('Yes'),
           ),
         ],
@@ -184,12 +184,13 @@ class _dashboard_screenState extends State<dashboard_screen> {
 
   LogoutBtn(BuildContext context, String logoutUrl) async {
     try{
+      log("logout_url : "+logoutUrl);
       if (await canLaunch(logoutUrl)) {
-    await launch(logoutUrl, forceWebView: true);
+    await launch(logoutUrl, forceWebView: true,enableJavaScript: true);
     } else {
     utils().showError("Could not launch logout url", context);
     }
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 0));
       shared_pref().removeSharedPreference();
       //Navigator.push(context, MaterialPageRoute(builder: (context) => login_identityserever()));
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => login_identityserever()));
