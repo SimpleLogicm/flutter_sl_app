@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../model/roalwisemenue.dart';
 import '../model/user_details_model.dart';
 import '../Utils/utils.dart';
 import '../model/process_details_model.dart';
@@ -11,6 +12,38 @@ import '../model/process_details_model.dart';
 class api_call {
 
  late List<user_details_model> userData = [];
+
+
+ Future<List<List<Roalwisemenue>>> getroalwisemenue( int processID, int userId) async {
+   late List<List<Roalwisemenue>> menulist =[];
+   var payload = json.encode({
+     "processID": processID,
+     "userID": userId
+   });
+
+   
+   final menuresponse = await http.post(Uri.parse(utils().base_url+"GetProcessRoleWiseMenu"),body: payload, headers: {
+     "Content-Type" : "application/json"
+   });
+
+   var Menuedata = jsonDecode(menuresponse.body.toString());
+   if(menuresponse.statusCode==201 || menuresponse.statusCode==200){
+     log(utils().base_url+"/api/SignIn/GetProcessRoleWiseMenu"+payload);
+     log(Menuedata.toString());
+
+     menulist = roalwisemenueFromJson(menuresponse.body);
+
+     // for(Map<String, dynamic> index in Menuedata){
+     //   menulist.add(Roalwisemenue.fromJson(index));
+     //
+     // }
+     return menulist;
+   }else{
+     log("Error while fetching response from server");
+     return menulist;
+   }
+
+ }
 
   Future<List<user_details_model>> getUserDetails(String email) async
   {

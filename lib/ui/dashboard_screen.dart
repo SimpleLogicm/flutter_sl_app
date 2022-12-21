@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:sl_app/Utils/shared_pref.dart';
+import 'package:sl_app/model/roalwisemenue.dart';
 import 'package:sl_app/ui/login_identityserever.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sl_app/Utils/shared_pref.dart';
@@ -21,6 +22,7 @@ class dashboard_screen extends StatefulWidget {
 
 class _dashboard_screenState extends State<dashboard_screen> {
   late Future<List<process_details_model>> processDetailObject;
+  late Future<List<List<Roalwisemenue>>> roalmenuDetails;
   final String email;
   final String userId;
   final String logoutUrl;
@@ -156,6 +158,11 @@ class _dashboard_screenState extends State<dashboard_screen> {
   connectProcess(int processId, String userId) {
 
     log(processId.toString()+" "+userId);
+    var payload =
+    roalmenuDetails = api_call().getroalwisemenue(processId,int.parse(userId));
+
+    roalmenuDetails.then((value) => log(value.toString()));
+
 
 
   }
@@ -205,3 +212,5 @@ class _dashboard_screenState extends State<dashboard_screen> {
   }
 
 }
+
+
