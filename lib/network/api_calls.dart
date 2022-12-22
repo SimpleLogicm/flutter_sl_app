@@ -14,8 +14,8 @@ class api_call {
  late List<user_details_model> userData = [];
 
 
- Future<List<List<Roalwisemenue>>> getroalwisemenue( int processID, int userId) async {
-   late List<List<Roalwisemenue>> menulist =[];
+ Future<List<List<roalwisemenue>>> getroalwisemenue( int processID, int userId) async {
+   late List<List<roalwisemenue>> menulist =[];
    var payload = json.encode({
      "processID": processID,
      "userID": userId
@@ -30,6 +30,8 @@ class api_call {
    if(menuresponse.statusCode==201 || menuresponse.statusCode==200){
      log(utils().base_url+"/api/SignIn/GetProcessRoleWiseMenu"+payload);
      log(Menuedata.toString());
+
+
 
      menulist = roalwisemenueFromJson(menuresponse.body);
 

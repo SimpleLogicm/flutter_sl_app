@@ -5,12 +5,12 @@
 import 'dart:convert';
 
 
-List<List<Roalwisemenue>> roalwisemenueFromJson(String str) => List<List<Roalwisemenue>>.from(json.decode(str).map((x) => List<Roalwisemenue>.from(x.map((x) => Roalwisemenue.fromJson(x)))));
+List<List<roalwisemenue>> roalwisemenueFromJson(String str) => List<List<roalwisemenue>>.from(json.decode(str).map((x) => List<roalwisemenue>.from(x.map((x) => roalwisemenue.fromJson(x)))));
 
-String roalwisemenueToJson(List<List<Roalwisemenue>> data) => json.encode(List<dynamic>.from(data.map((x) => List<dynamic>.from(x.map((x) => x.toJson())))));
+String roalwisemenueToJson(List<List<roalwisemenue>> data) => json.encode(List<dynamic>.from(data.map((x) => List<dynamic>.from(x.map((x) => x.toJson())))));
 
-class Roalwisemenue {
-  Roalwisemenue({
+class roalwisemenue {
+  roalwisemenue({
     required this.menuId,
     required this.menuheader,
     required this.menuname,
@@ -37,7 +37,7 @@ class Roalwisemenue {
   dynamic menulogo;
   //Menulogo menulogo;
 
-  factory Roalwisemenue.fromJson(Map<String, dynamic> json) => Roalwisemenue(
+  factory roalwisemenue.fromJson(Map<String, dynamic> json) => roalwisemenue(
     menuId: json["menuID"] ,
     menuheader: json["menuheader"],
     menuname: json["menuname"] ,

@@ -22,7 +22,8 @@ class dashboard_screen extends StatefulWidget {
 
 class _dashboard_screenState extends State<dashboard_screen> {
   late Future<List<process_details_model>> processDetailObject;
-  late Future<List<List<Roalwisemenue>>> roalmenuDetails;
+  late Future<List<List<roalwisemenue>>> roalmenuDetails;
+  //late Future<List<roalwisemenue>> roalmenuDetails;
   final String email;
   final String userId;
   final String logoutUrl;
@@ -161,7 +162,13 @@ class _dashboard_screenState extends State<dashboard_screen> {
     var payload =
     roalmenuDetails = api_call().getroalwisemenue(processId,int.parse(userId));
 
-    roalmenuDetails.then((value) => log(value.toString()));
+    roalmenuDetails.then((value) {
+
+      var a = value[0];
+      //log(a.toString());
+      for (var i = 0; i < a.length; i++) { log(a[i].toJson().toString());}
+    });
+
 
 
 
