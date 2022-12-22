@@ -31,6 +31,8 @@ class login_identityserever extends StatefulWidget {
 
 class _login_identitysereverState extends State<login_identityserever> {
 
+
+  bool _showCircle = false;
   WebViewController? controllerGlobal;
   String? userId;
   late Future<List<user_details_model>> userDetailsObject;
@@ -121,6 +123,12 @@ class _login_identitysereverState extends State<login_identityserever> {
                 color: Colors.purpleAccent,
               ) ,
               label: Text('Sign in '),
+            ),
+          ),
+          Center(
+            child: Visibility(
+              visible: _showCircle,
+              child: CircularProgressIndicator(color: Colors.blueAccent,),
             ),
           ),
 
@@ -224,6 +232,8 @@ class _login_identitysereverState extends State<login_identityserever> {
         shared_pref().getString_SharedprefData("userId").then((valueUserId){
           shared_pref().getString_SharedprefData("logoutUrl").then((valuelogoutUrl) {
             setState(() {
+
+              //_showCircle = !_showCircle;
               sharedemail = value.toString();
               shareduserId = valueUserId.toString();
               sharedlogoutUrl = valuelogoutUrl.toString();
@@ -231,8 +241,10 @@ class _login_identitysereverState extends State<login_identityserever> {
               log("Shared Preference : "+sharedemail+" UserId: "+shareduserId+" LogoutUrl : "+sharedlogoutUrl);
               debugPrint(sharedemail);
               if(sharedemail == 'null'){
+
                 getloginopen(Uri.parse(_issuer), _clientId, _scopes);
               }else{
+
                 Navigator.push(context, MaterialPageRoute(builder: (context) => dashboard_screen( email: sharedemail, userId: shareduserId, logoutUrl: sharedlogoutUrl,)));
               }
             });

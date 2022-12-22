@@ -1,27 +1,62 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:sl_app/Utils/shared_pref.dart';
 
+import '../Utils/utils.dart';
+import '../model/roalwisemenue.dart';
+import '../network/api_calls.dart';
+
 class menudashboard_screen extends StatefulWidget {
 
-  const menudashboard_screen({Key? key, required int processId, required String userId}) : super(key: key);
+  final int processId;
+  final int userId;
+  const menudashboard_screen({Key? key,required this.processId,required this.userId}) : super(key: key);
 
   @override
-  State<menudashboard_screen> createState() => _menudashboard_screenState();
+  State<menudashboard_screen> createState() => _menudashboard_screenState(processId,userId);
 }
 
 
 
 class _menudashboard_screenState extends State<menudashboard_screen> {
-  String? useremail;
+   String? useremail;
 
+  final int userId;
+  final int processId;
+
+  late Future<List<List<roalwisemenue>>> roalmenuDetails;
+  _menudashboard_screenState(this.processId,this.userId);
 
 
   @override
   void initState() {
     // TODO: implement initState
-    getusername();
     super.initState();
+    shared_pref().getString_SharedprefData("useremail").then((value) {
+      setState(() {
+        useremail = value.toString();
+      });
+    });
+    log("Process Id : "+processId.toString()+" User Id"+userId.toString());
+    //log(" User Email : "+useremail);
+    try {
+      roalmenuDetails = api_call().getroalwisemenue(processId, userId);
+      log("Init Call : "+roalmenuDetails.toString());
+    }
+    catch (e)
+    {
+      log(e.toString());
+      utils().showError(e, context);
+    }
+    // roalmenuDetails.then((value) {
+    //
+    //   var a = value[0];
+    //   //log(a.toString());
+    //   for (var i = 0; i < a.length; i++) { log(a[i].toJson().toString());}
+    // });
   }
+
 
 
   @override
@@ -32,7 +67,14 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
     ),
     body: Container(),
       drawer: Drawer(
-        child: drawermenue(),
+        child: ListView(
+            children: [
+              ExpansionTile(
+                title: Text("Expansion Title"),
+                children: <Widget>[Text("children 1"), Text("children 2")],
+              )
+            ],
+        ),
 
       ),
 
@@ -67,7 +109,5 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
 
   }
 
-   getusername() async {
-   useremail= shared_pref().getString_SharedprefData("useremail").toString();
-  }
+
 }

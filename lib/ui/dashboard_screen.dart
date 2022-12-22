@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sl_app/Utils/shared_pref.dart';
 import 'package:sl_app/model/roalwisemenue.dart';
 import 'package:sl_app/ui/login_identityserever.dart';
+import 'package:sl_app/ui/menudashboard_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sl_app/Utils/shared_pref.dart';
 import '../Utils/utils.dart';
@@ -158,19 +159,19 @@ class _dashboard_screenState extends State<dashboard_screen> {
 
   connectProcess(int processId, String userId) {
 
-    log(processId.toString()+" "+userId);
-    var payload =
-    roalmenuDetails = api_call().getroalwisemenue(processId,int.parse(userId));
+    // log(processId.toString()+" "+userId);
+    // var payload =
+    // roalmenuDetails = api_call().getroalwisemenue(processId,int.parse(userId));
+    //
+    // roalmenuDetails.then((value) {
+    //
+    //   var a = value[0];
+    //   //log(a.toString());
+    //   for (var i = 0; i < a.length; i++) { log(a[i].toJson().toString());}
+    // });
+    //
 
-    roalmenuDetails.then((value) {
-
-      var a = value[0];
-      //log(a.toString());
-      for (var i = 0; i < a.length; i++) { log(a[i].toJson().toString());}
-    });
-
-
-
+    Navigator.push(context, MaterialPageRoute(builder: (context) => menudashboard_screen(processId: processId,userId: int.parse(userId), )));
 
   }
 
