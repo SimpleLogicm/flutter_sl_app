@@ -193,6 +193,7 @@ class _login_identitysereverState extends State<login_identityserever> {
 
     var ema = await c.getUserInfo().then((value){
       log(value.email.toString());
+
       var emaiId = value.email.toString();
       userDetailsObject = api_call().getUserDetails(emaiId);
       userDetailsObject.then((value){

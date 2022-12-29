@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 class utils{
   //UAT
-  var base_url= "http://20.235.17.50/api/SignIn/";
+  var base_url= "http://20.235.17.50/api/";
   bool isLoggedOut = false;
 
   void showError(dynamic ex , BuildContext context) {
