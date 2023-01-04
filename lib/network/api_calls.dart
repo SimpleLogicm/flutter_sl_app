@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../Utils/shared_pref.dart';
 import '../model/dashboard_submenues.dart';
 import '../model/filldropdown.dart';
 import '../model/roalwisemenue.dart';
@@ -16,70 +17,126 @@ class api_call {
  late List<user_details_model> userData = [];
 
 
-Future<List<Filldropdown>> getdropdowndata (int processId, int pageId,int fieldMappingID,int fieldID ) async {
-  var payload = json.encode({
-    "pageId": pageId,
-    "processId": processId,
-    "fieldMappingID": fieldMappingID,
-    "fieldID": fieldID,
-    "textValue": "string",
-    "connectionString": "string"
-  });
+// Future<List<Filldropdown>> getdropdowndata (int processId, int pageId,int fieldMappingID,int fieldID ) async {
+//   var payload = json.encode({
+//     "pageId": pageId,
+//     "processId": processId,
+//     "fieldMappingID": fieldMappingID,
+//     "fieldID": fieldID,
+//     "textValue": "string",
+//     "connectionString": "string"
+//   });
+//
+//
+//   final response = await http.post(Uri.parse(utils().base_url+"Dynamic/FillDropdown"),body: payload,headers: {
+//     "Content-Type" : "application/json"
+//   });
+//
+//   var dropdownresponse = jsonDecode(response.body.toString());
+//
+//   late List<Filldropdown> dropdownresponselist = [];
+//
+//
+//   if(response.statusCode==200){
+//     log(utils().base_url+"Dynamic/GetPageControls"+payload);
+//     log(dropdownresponse.toString());
+//
+//     return dropdownresponselist= filldropdownFromJson(response.body);
+//   } else{
+//     log("Error while fetching response from server");
+//     return dropdownresponselist;
+//   }
+//
+// }
   
   
-  final response = await http.post(Uri.parse(utils().base_url+"Dynamic/FillDropdown"),body: payload,headers: {
-    "Content-Type" : "application/json"
-  });
-
-  var dropdownresponse = jsonDecode(response.body.toString());
-
-  late List<Filldropdown> dropdownresponselist = [];
-
-
-  if(response.statusCode==200){
-    log(utils().base_url+"Dynamic/GetPageControls"+payload);
-    log(dropdownresponse.toString());
-
-    return dropdownresponselist= filldropdownFromJson(response.body);
-  } else{
-    log("Error while fetching response from server");
-    return dropdownresponselist;
-  }
-  
+  Future<String> savedata(String request) async{
+    var payload = request;
+    
+    final response = await http.post(Uri.parse(utils().base_url+"Dynamic/Save"),body: payload,headers:{ "Content-Type" : "application/json"} );
+    var dataresponse = response.body.toString();
+    if
+    (response.statusCode==200){
+      log("response String  "   +dataresponse.toString());
+      return dataresponse.toString();
+    }else{
+      log("Error while fetching response from server");
+      return dataresponse.toString();
+    }
+    
 }
  
  
+Future<String> getflutterdata(int processId, int pageId) async {
 
- Future<List<dashboard_submenues>> getdashboard_menuclick(int processId, int pageId) async{
-   var payload=json.encode({
-     "pageId": pageId,
-     "processId": processId,
-     "fieldMappingID": 0,
-     "fieldID": 0,
-     "textValue": "string",
-     "connectionString": "string"
+  var payload=json.encode({
+    "pageId": pageId,
+    "processId": processId,
+    "fieldMappingID": 0,
+    "fieldID": 0,
+    "textValue": "string",
+    "connectionString": "string",
+    "isNotFlutter": false
 
-   });
+  });
+  final response = await http.post(Uri.parse(utils().base_url+"Dynamic/GetPageControls"),body: payload,headers: { "Content-Type" : "application/json"} );
 
-   final response = await http.post(Uri.parse(utils().base_url+"Dynamic/GetPageControls"),body: payload,headers: { "Content-Type" : "application/json"} );
-
-   var dataresponse = jsonDecode(response.body.toString());
-   late List<dashboard_submenues> responselist  =[];
-   if
-   (response.statusCode == 200){
-     log(utils().base_url+"Dynamic/GetPageControls"+ payload);
-     log(dataresponse.toString());
+  var dataresponse =response.body.toString();
 
 
-     return responselist = dashboard_submenuesFromJson(response.body);
+  late List<dashboard_submenues> responselist  =[];
+  if
+  (response.statusCode == 200){
+    log(utils().base_url+"Dynamic/GetPageControls"+ payload);
+    log("dataresponse  "   +dataresponse.toString());
 
-   }
-   else{
-     log("Error while fetching response from server");
-     return responselist;
-   }
 
- }
+    shared_pref().putString_Sharedvalue("datarepo", dataresponse.toString());
+
+
+    return dataresponse.toString();
+
+  }
+  else{
+    log("Error while fetching response from server");
+    return dataresponse.toString();
+  }
+
+
+}
+
+
+ // Future<List<dashboard_submenues>> getdashboard_menuclick(int processId, int pageId) async{
+ //   var payload=json.encode({
+ //     "pageId": pageId,
+ //     "processId": processId,
+ //     "fieldMappingID": 0,
+ //     "fieldID": 0,
+ //     "textValue": "string",
+ //     "connectionString": "string",
+ //     "isNotFlutter": false
+ //
+ //   });
+ //
+ //   final response = await http.post(Uri.parse(utils().base_url+"Dynamic/GetPageControls"),body: payload,headers: { "Content-Type" : "application/json"} );
+ //
+ //   var dataresponse = jsonDecode(response.body.toString());
+ //   late List<dashboard_submenues> responselist  =[];
+ //   if
+ //   (response.statusCode == 200){
+ //     log(utils().base_url+"Dynamic/GetPageControls"+ payload);
+ //     log(dataresponse.toString());
+ //
+ //
+ //     return responselist = dashboard_submenuesFromJson(response.body);
+ //
+ //   }
+ //   else{
+ //     log("Error while fetching response from server");
+ //     return responselist;
+ //   }
+ //
+ // }
 
 
 
@@ -93,6 +150,8 @@ Future<List<Filldropdown>> getdropdowndata (int processId, int pageId,int fieldM
      "processID": processID,
      "userID": userId
    });
+
+
 
    
    final menuresponse = await http.post(Uri.parse(utils().base_url+"SignIn/GetProcessRoleWiseMenu"),body: payload, headers: {

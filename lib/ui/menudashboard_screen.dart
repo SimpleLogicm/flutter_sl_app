@@ -1,12 +1,18 @@
+import 'dart:convert';
 import 'dart:developer';
 
 
 import 'package:cool_dropdown/cool_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:dynamic_forms/dynamic_forms.dart';
+import 'package:flutter_dynamic_forms/flutter_dynamic_forms.dart';
+import 'package:flutter_dynamic_forms_components/flutter_dynamic_forms_components.dart' as components;
 import 'package:sl_app/Utils/shared_pref.dart';
 import 'package:sl_app/model/filldropdown.dart';
 
 import '../Utils/utils.dart';
+import '../model/Savedata.dart';
 import '../model/dashboard_submenues.dart';
 import '../model/roalwisemenue.dart';
 import '../network/api_calls.dart';
@@ -15,6 +21,7 @@ class menudashboard_screen extends StatefulWidget {
 
   final int processId;
   final int userId;
+
   const menudashboard_screen({Key? key,required this.processId,required this.userId}) : super(key: key);
 
   @override
@@ -29,9 +36,17 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
 
   final int userId;
   final int processId;
+
+   var proid;
+   var pgid;
   var size;
-   var pageId ;
-   String dropdownvalue = 'Item 1';
+  var pageId ;
+  String dropdownvalue = 'Item 1';
+
+  bool isLoading = true;
+  late String fileContent ="";
+   var rep;
+
 
    // List of items in our dropdown menu
    var items = [
@@ -55,8 +70,9 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
   late Future<List<List<roalwisemenue>>> roalmenuDetails;
    Future<List<dashboard_submenues>>? dashboardsubmenu  ;
    Future<List<Filldropdown>>? dropdowndata  ;
+   Future<String>? dynamicwidgit;
   late List<dynamic> showwidgit =[];
-   var listlength ;
+  var listlength ;
 
   _menudashboard_screenState(this.processId,this.userId);
 
@@ -89,7 +105,12 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
       utils().showError(e, context);
     }
 
+
+
   }
+
+
+
 
 
 
@@ -99,12 +120,12 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
     return Scaffold(appBar: AppBar(
       backgroundColor: Colors.amberAccent,
     ),
-    body: getview(),
+    body: //getview(),//for normal json
 
+
+      getflutterview(),
 
       drawer: Drawer(
-
-
 
           child: Column(
             children: [
@@ -148,7 +169,6 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
                                          padding: const EdgeInsets.all(15.0),
                                          child: InkWell(child: Text(snapshot.data![2][index].menuname),
                                          onTap: (){
-                                     //      debugPrint("pressed ${snapshot.data![2][index].menuname}");
 
                                            getdashboardui(snapshot.data![2][index].menuid);
                                            Navigator.pop(context);
@@ -188,265 +208,167 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
     );
   }
 
-  drawermenue() {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        DrawerHeader(child: Text(useremail != "" ? useremail.toString() : "User email not found",
-          style: TextStyle(color:Colors.black),),
 
-          decoration: BoxDecoration(color: Colors.amberAccent),
-
-
-        ),
-
-
-
-      ],
-
-
-    );
-
-
-  }
 
   void getdashboardui(menuid) {
  pageId = menuid;
 
-// log(pageId.toString());
-// log(processId.toString());
-    dashboardsubmenu = api_call().getdashboard_menuclick(processId, pageId);
 
+ dynamicwidgit = api_call().getflutterdata(processId, pageId);
 
+dynamicwidgit?.then((value) {
 
+  setState(() {
+    shared_pref().putInt_Sharedvalue("processId", processId);
+    shared_pref().putInt_Sharedvalue("pageId", pageId);
 
-    dashboardsubmenu?.then((value) => {
-      listlength = value.length,
-
-      setState(() {
-    getview();
-      }),
-
-     // log(value[0].fieldType.toString()),
-    //  log(listlength.toString()),
-
-   value.forEach((element) {
-    // log(element.fieldType);
-     showwidgit.add(element.fieldType);
-
-   }),
-   //   print(showwidgit),
-
-
-
+    shared_pref().getInt_SharedprefData("processId").then((value1) {
+      shared_pref().getInt_SharedprefData("pageId").then((value2) {
+        setState(() {
+          proid = value1;
+          pgid = value2;
+        });
+      });
     });
 
 
+    fileContent = value.toString();
+    log(" file response  "+fileContent.toString());
+    log("Id before calling widget : ${processId}${pageId}");
+    getflutterview();
+  });
 
-
+} );
   }
 
- Widget getview() {
-
-    return  Container(
-      child:  Column(
-        children: [
-          FutureBuilder<List<dashboard_submenues>>(
-            future: dashboardsubmenu ,
-            builder: (BuildContext context,snapshot){
-              if(snapshot.hasData){
-                return ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: listlength,
-                    itemBuilder: (BuildContext context, int index) {
-                      if(snapshot.data![index].fieldType == "textbox"){
-                        final controller = TextEditingController();
-                        _controllers.add(controller);
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextField(
-                            controller:  controller,
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: snapshot.data![index].label,
-                              hintText: 'Enter ${snapshot.data![index].label}',
-                            ),
-                          ),
-                        );
-
-                      }else if(snapshot.data![index].fieldType=="dropdown"){
-                        getspinnerdata(snapshot.data![index].fieldId,snapshot.data![index].fieldMappingId);
-
-                      return  Center(
-                        child: Container(
-                          width: MediaQuery.of(context).size.width,
-                          child: Padding(
-
-                            padding: const EdgeInsets.all(8.0),
-
-                            child:
-
-                            // CoolDropdown(
-                            //   resultWidth: MediaQuery.of(context).size.width,
-                            //   dropdownWidth: MediaQuery.of(context).size.width/1.5,
-                            //   dropdownList: dropdownItemList,
-                            //
-                            //   onChange: (selectedItem) {
-                            //     print(selectedItem[0].toString());
-                            //     setState(() {
-                            //       dropdownvalue= selectedItem;
-                            //     });
-                            //   },
-                            //   // defaultValue: dropdownItemList[0],
-                            // ),
-
-                            DropdownButton(
-
-                              value: dropdownvalue,
-
-                              // Down Arrow Icon
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              items: dropdownItemList .map((dynamic items) {
-                          return DropdownMenuItem(
-                          value: items,
-                          child: Text(items),
-                          );
-                          }).toList(),
-
-                             onChanged: (a){
-                                print(a);
-                             },
-                            ),
 
 
 
+ Widget getflutterview() {
 
 
-                          ),
-                        ),
-                      );
-                      }else {
+    return Center(
 
-                      }
-                      return SizedBox();
-
-                    });
-              }else{
-                return  Center(child: Text(""),);
-              }
-            },
-          ),
-          ElevatedButton(onPressed: (){
-
-
-            // showDialog(
-            //   context: context,
-            //   builder: (context) {
-            //     return AlertDialog(
-            //       // Retrieve the text the that user has entered by using the
-            //       // TextEditingController.
-            //
-            //       content: Text(_controllers.toString()),
-            //     );
-            //   },
-            // );
-
-            setState(() {
-              List etans = [];
-              _controllers.forEach((element) {
-
-
-                etans.add(element.text);
-
-                print(element.text);
-
-          //      print(dropdownvalue);
-
-              });
-              showDialog(
-                context: context,
+      child: SingleChildScrollView(
+        child:
+        fileContent == ""   ? CircularProgressIndicator() :
+        ParsedFormProvider(
+          create: (_) => JsonFormManager(),
+          content: fileContent,
+          //'{ "@name": "form", "id": "pageame", "caption": "Page Caption", "children": [ { "@name": "textField", "id": "VendorCode", "label": "Vendor Code", "inputType": "number", "maxLines": "1", "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 != 1" }, "isVisible": { "expression": "1 == 1" }, "validations": [ { "@name": "requiredValidation", "message": "Vendor Code is required" }, { "@name": "validation", "message": "Vendor Code minumun length require is 10", "isValid": { "expression": "length(@VendorCode) > 10" } }, { "@name": "validation", "message": "Vendor Code max length is 50", "isValid": { "expression": "length(@VendorCode) < 50" } } ] }, { "@name": "textField", "id": "VendorName", "label": "Vendor Name", "inputType": "text", "maxLines": "1", "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 != 1" }, "isVisible": { "expression": "1 == 1" }, "validations": [ { "@name": "requiredValidation", "message": "Vendor Name is required" }, { "@name": "validation", "message": "Vendor Name minumun length require is 10", "isValid": { "expression": "length(@VendorName) > 10" } }, { "@name": "validation", "message": "Vendor Name max length is 50", "isValid": { "expression": "length(@VendorName) < 50" } } ] }, { "@name": "dropdownButton", "id": "InvoiceType", "label": "Invoice Type", "dependantFields": [], "cascadeFields": { "IsCasacade": "1", "CascadingFieldsID": "SubInvoiceType", "CascadeValue": "SubInvoiceTypeId" }, "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 == 1" }, "choices": [ { "@name": "dropdownOption", "value": "1", "label": "PO" }, { "@name": "dropdownOption", "value": "2", "label": "NONPO" }, { "@name": "dropdownOption", "value": "3", "label": "Urgent" } ], "isVisible": { "expression": "1 == 1" }, "validations": [ { "@name": "requiredValidation", "message": "Invoice Type is required" } ] }, { "@name": "textField", "id": "PAN", "label": "PAN", "inputType": "text", "maxLines": "1", "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 != 1" }, "isVisible": { "expression": "1 == 1" }, "validations": [ { "@name": "requiredValidation", "message": "PAN is required" }, { "@name": "validation", "message": "PAN minumun length require is 10", "isValid": { "expression": "length(@PAN) > 10" } }, { "@name": "validation", "message": "PAN max length is 50", "isValid": { "expression": "length(@PAN) < 50" } } ] }, { "@name": "textField", "id": "PONumber", "label": "PO Number", "inputType": "text", "maxLines": "1", "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 != 1" }, "isVisible": { "expression": "1 == 1" }, "validations": [] }, { "@name": "date", "id": "PODate", "label": "PO Date", "format": "yyyy-MM-dd", "firsDate": "01/01/0001 00:00:00", "lastDate": "12/31/9999 23:59:59", "initialDate": "2023-01-03", "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 != 1" }, "isVisible": { "expression": "1 == 1" }, "validations": [] }, { "@name": "dropdownButton", "id": "SubInvoiceType", "label": "Sub Invoice Type", "dependantFields": [], "isEditable": { "expression": "1 == 1" }, "isDependant": { "expression": "1 == 1" }, "choices": [ { "@name": "dropdownOption", "value": "po sub type 1", "label": "po sub type 1" }, { "@name": "dropdownOption", "value": "po sub type 2", "label": "po sub type 2" }, { "@name": "dropdownOption", "value": "non po sub type 1", "label": "non po sub type 1" }, { "@name": "dropdownOption", "value": "non po sub type 2", "label": "non po sub type 2" }, { "@name": "dropdownOption", "value": "urgent sub type 1", "label": "urgent sub type 1" }, { "@name": "dropdownOption", "value": "urgent  sub type 2", "label": "urgent  sub type 2" } ], "isVisible": { "expression": "1 == 1" }, "validations": [ { "@name": "requiredValidation", "message": "Sub Invoice Type is required" } ] } ] }',
+          parsers: components.getDefaultParserList(),
+          child: Column(
+            children: [
+              FormRenderer<JsonFormManager>(
+                renderers: components.getRenderers(),
+              ),
+              // Using Builder to obtain a BuildContext already containg JsonFormManager
+              Builder(
                 builder: (context) {
-                  return AlertDialog(
-                    // Retrieve the text the that user has entered by using the
-                    // TextEditingController.
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      child: Text('Submit'),
+                      onPressed: () {
+                        if( FormProvider.of<JsonFormManager>(context).isFormValid){
+                          var formProperties =
+                          FormProvider.of<JsonFormManager>(context)
+                              .getFormProperties();
 
-                    content: Text(etans.toString()),
+                          _submitToServer(context, formProperties);
+                        }else{
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("please enter value")));
+
+                        }
+
+
+                      },
+                    ),
                   );
                 },
-              );
-
-
-
-              _controllers.clear();
-
-
-
-
-              // SimpleDialog(
-              //   title:const Text('GeeksforGeeks'),
-              //   children: <Widget>[
-              //     SimpleDialogOption(
-              //       onPressed: () { },
-              //       child:const Text('Option 1'),
-              //     ),
-              //     SimpleDialogOption(
-              //       onPressed: () { },
-              //       child: const Text('Option 2'),
-              //     ),
-              //   ],
-              // );
-
-
-
-            });
-          },
-              child: Text("Save"),
-
-
-          )
-        ],
+              ),
+            ],
+          ),
+        ),
       ),
-
-
     );
 
 
-  }
-
-  void getspinnerdata(fieldId, fieldMappingId) {
-
-
-    dropdowndata = api_call().getdropdowndata(processId, pageId, fieldMappingId, fieldId);
-
-    dropdowndata?.then((value)=> {
-
-
-
-      dropdownItemList.clear(),
-      for(int i =0 ; i < value.length ; i++){
-        debugPrint(value[i].text),
-
-    //     dropdownItemList.add(
-    // {
-    //   'label': '${value[i].text}',
-    //   'value': '${value[i].value}'
-    // }
-    //     )
-    //   },
-    
-    dropdownItemList.add(Filldropdown(text: value[i].text, value: value[i].value)),
-
-
-      debugPrint(dropdownItemList.toString()),
-
-    }
-
-  });
-    print("object  spinner data api");
 
   }
+
+
+
+   void _submitToServer(BuildContext context, List<FormPropertyValue> formProperties) {
+     // Only showing dialog with the form data for demo purposes
+
+   int j =1;
+
+
+   // var prosid;
+   // var pageid;
+
+
+   var data = formProperties.map((e) =>
+   {'"AutoID":${j++},"FieldID":"${e.id}","FieldValue":"${e.value}"'}).toList();
+   var resBody = {};
+   resBody['"dtFieldData"'] = data.toString();
+   resBody['"mode"'] = '"String"';
+   resBody['"pageID"'] = pgid;
+   resBody['"autoID"'] = 0;
+   resBody['"processId"'] = proid;
+   print("responsebody   "+resBody.toString().trim());
+
+  
+ 
+
+
+   // showDialog(
+   //       context: context,
+   //       builder: (context) {
+   //         return AlertDialog(
+   //           title: Text('Form data'),
+   //           content: Container(
+   //             width: double.maxFinite,
+   //             height: 300.0,
+   //             child: ListView(
+   //               padding: EdgeInsets.all(8.0),
+   //               //map List of our data to the ListView
+   //               children: formProperties
+   //                   .map((riv) =>
+   //                   Text('${riv.id} : ${riv.value}')
+   //
+   //               )
+   //                   .toList(),
+   //             ),
+   //           ),
+   //           actions: <Widget>[
+   //             TextButton(
+   //               child: Text('Ok'),
+   //               onPressed: () {
+   //                 Navigator.of(context).pop();
+   //               },
+   //             )
+   //           ],
+   //         );
+   //       },
+   //     );
+  //   }
+
+
+   var res=  api_call().savedata(resBody.toString().trim());
+   res.then((value) {
+if(value.contains("Success")){
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Data Submitted Successfully...")));
+}else{
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something Went Wrong...")));
+}
+   });
+
+
+   }
+
+
 
 
 }

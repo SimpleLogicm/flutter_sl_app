@@ -45,6 +45,10 @@ dependencies:
   change_app_package_name: ^1.0.0
   shared_preferences: ^2.0.15
   cool_dropdown: ^1.4.2
+  flutter_dynamic_forms_components: ^1.0.0
+  flutter_dynamic_forms: ^1.0.0
+  json_annotation: ^4.7.0
+
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +60,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  build_runner: ^2.3.3
+  json_serializable: ^6.5.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -72,6 +78,7 @@ flutter:
   assets:
     - assets/images/AzurLogo.png
     - assets/images/AzurLogo2.png
+    - assets/test_form1.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
