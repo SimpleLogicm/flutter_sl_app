@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:sl_app/model/Page_actions.dart';
 import '../Utils/shared_pref.dart';
 import '../model/dashboard_submenues.dart';
 import '../model/filldropdown.dart';
@@ -17,37 +18,40 @@ class api_call {
  late List<user_details_model> userData = [];
 
 
-// Future<List<Filldropdown>> getdropdowndata (int processId, int pageId,int fieldMappingID,int fieldID ) async {
-//   var payload = json.encode({
-//     "pageId": pageId,
-//     "processId": processId,
-//     "fieldMappingID": fieldMappingID,
-//     "fieldID": fieldID,
-//     "textValue": "string",
-//     "connectionString": "string"
-//   });
-//
-//
-//   final response = await http.post(Uri.parse(utils().base_url+"Dynamic/FillDropdown"),body: payload,headers: {
-//     "Content-Type" : "application/json"
-//   });
-//
-//   var dropdownresponse = jsonDecode(response.body.toString());
-//
-//   late List<Filldropdown> dropdownresponselist = [];
-//
-//
-//   if(response.statusCode==200){
-//     log(utils().base_url+"Dynamic/GetPageControls"+payload);
-//     log(dropdownresponse.toString());
-//
-//     return dropdownresponselist= filldropdownFromJson(response.body);
-//   } else{
-//     log("Error while fetching response from server");
-//     return dropdownresponselist;
-//   }
-//
-// }
+Future<List<PageActions>> getpage_actions (int processId,int PageId ,int userId,String userRole ) async {
+  var payload = json.encode({
+    "processID":processId,
+    "pageID": PageId,
+    "userRole":userRole.toString(),
+    "autoID": 0,
+    "userID": userId.toString(),
+    "status": "string",
+    "actionID": 0
+  });
+
+
+  final response = await http.post(Uri.parse(utils().base_url+"Dynamic/GetPageActions"),body: payload,headers: {
+    "Content-Type" : "application/json"
+  });
+
+  var dropdownresponse = jsonDecode(response.body.toString());
+
+  late List<PageActions> dropdownresponselist = [];
+
+
+  if(response.statusCode==200){
+    log(utils().base_url+"Dynamic/GetPageActions"+payload);
+    log("Page Action Response:- "+dropdownresponse.toString());
+
+    return dropdownresponselist= pageActionsFromJson(response.body);
+  } else{
+    log("Error while fetching response from server");
+    return dropdownresponselist;
+  }
+
+}
+
+
   
   
   Future<String> savedata(String request) async{

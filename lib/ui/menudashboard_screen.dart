@@ -9,10 +9,10 @@ import 'package:dynamic_forms/dynamic_forms.dart';
 import 'package:flutter_dynamic_forms/flutter_dynamic_forms.dart';
 import 'package:flutter_dynamic_forms_components/flutter_dynamic_forms_components.dart' as components;
 import 'package:sl_app/Utils/shared_pref.dart';
+import 'package:sl_app/model/Page_actions.dart';
 import 'package:sl_app/model/filldropdown.dart';
 
 import '../Utils/utils.dart';
-import '../model/Savedata.dart';
 import '../model/dashboard_submenues.dart';
 import '../model/roalwisemenue.dart';
 import '../network/api_calls.dart';
@@ -39,9 +39,12 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
 
    var proid;
    var pgid;
+   var userRole ;
+ //  var userId;
   var size;
   var pageId ;
-  String dropdownvalue = 'Item 1';
+  String dropdownvalue = "";
+
 
   bool isLoading = true;
   late String fileContent ="";
@@ -57,6 +60,8 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
      'Item 5',
    ];
 
+
+
    // List of items in our dropdown menu
   List<Filldropdown> dropdownItemList = [
      // {'label': 'apple', 'value': 'apple'}, // label is required and unique
@@ -69,7 +74,7 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
 
   late Future<List<List<roalwisemenue>>> roalmenuDetails;
    Future<List<dashboard_submenues>>? dashboardsubmenu  ;
-   Future<List<Filldropdown>>? dropdowndata  ;
+   Future<List<PageActions>>? dropdowndata  ;
    Future<String>? dynamicwidgit;
   late List<dynamic> showwidgit =[];
   var listlength ;
@@ -81,6 +86,7 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     shared_pref().getString_SharedprefData("useremail").then((value) {
       setState(() {
         useremail = value.toString();
@@ -171,6 +177,9 @@ class _menudashboard_screenState extends State<menudashboard_screen> {
                                          onTap: (){
 
                                            getdashboardui(snapshot.data![2][index].menuid);
+                                           shared_pref().putString_Sharedvalue("userRole", snapshot.data![2][index].rolename);
+                                           userRole = snapshot.data![2][index].rolename;
+
                                            Navigator.pop(context);
 
                                          },)
@@ -232,9 +241,18 @@ dynamicwidgit?.then((value) {
     });
 
 
+
+    // shared_pref().getString_SharedprefData("userId").then((value) {
+    //   setState(() {
+    //     userId= value.toString();
+    //   });
+    // });
+
+
     fileContent = value.toString();
     log(" file response  "+fileContent.toString());
     log("Id before calling widget : ${processId}${pageId}");
+    getnte();
     getflutterview();
   });
 
@@ -263,6 +281,35 @@ dynamicwidgit?.then((value) {
                 renderers: components.getRenderers(),
               ),
               // Using Builder to obtain a BuildContext already containg JsonFormManager
+
+              Builder(builder: (context){
+                return Padding(padding: const EdgeInsets.all(8.0),
+                  child: DropdownButton(
+
+                    // Initial Value
+                    value: dropdownvalue,
+
+                    // Down Arrow Icon
+                    icon: const Icon(Icons.keyboard_arrow_down),
+
+                    // Array list of items
+                    items: items.map((String items) {
+                      return DropdownMenuItem(
+                        value: items,
+                        child: Text(items),
+                      );
+                    }).toList(),
+                    // After selecting the desired option,it will
+                    // change button value to selected value
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        dropdownvalue = newValue!;
+                      });
+                    },
+                  ),
+                );
+              }),
+
               Builder(
                 builder: (context) {
                   return Padding(
@@ -313,7 +360,7 @@ dynamicwidgit?.then((value) {
    {'"AutoID":${j++},"FieldID":"${e.id}","FieldValue":"${e.value}"'}).toList();
    var resBody = {};
    resBody['"dtFieldData"'] = data.toString();
-   resBody['"mode"'] = '"String"';
+   resBody['"mode"'] = '"Insert"';
    resBody['"pageID"'] = pgid;
    resBody['"autoID"'] = 0;
    resBody['"processId"'] = proid;
@@ -367,6 +414,32 @@ if(value.contains("Success")){
 
 
    }
+
+  void getnte() {
+
+    shared_pref().getString_SharedprefData("userRole").then((value3) {
+      setState(() {
+        userRole = value3.toString();
+        //  print(value.toString());
+      });
+
+    });
+
+    print("new method calll  ...... $userId");
+
+    dropdowndata = api_call().getpage_actions(processId, pageId, userId, userRole);
+
+    dropdowndata?.then((value){
+
+
+      print("Page response:- "+value[0].actionName);
+      setState(() {
+        items.add(value[0].actionName);
+      });
+
+    });
+
+  }
 
 
 
